@@ -1,22 +1,30 @@
 var SerialPort = require("serialport");
 
-var port = new SerialPort("\\\\.\\COM9", {
-  baudrRate: 9600,
-  dataBits: 8,
-  parity: "none",
-  stopBits: 1,
-  flowControl: false,
+var myport = "";
+// tìm kiếm theo pnpId
+SerialPort.list().then((ports) => {
+  ports.forEach(function (port) {
+    var pnpId = "USB\\VID_0408&PID_EA26&MI_01\\6&30308331&0&0001";
+    if (port.pnpId.toString() === pnpId.toString()) {
+      myport = new SerialPort(`${port.path}`, {
+        baudrRate: 9600,
+        dataBits: 8,
+        parity: "none",
+        stopBits: 1,
+        flowControl: false,
+      });
+      myport.on("open", onOpen);
+      myport.on("error", onError);
+      myport.on("data", onDataReceived);
+      myport.on("close", onClose);
+    }
+  });
 });
-
-port.on("open", onOpen);
-port.on("error", onError);
-port.on("data", onDataReceived);
-port.on("close", onClose);
 
 function onOpen(error) {
   if (!error) {
     console.log("Kết nối thành công");
-    send(port, "<sdt>", "<msg>");
+    send(myport, "<phone>", "<msg>");
   }
 }
 
